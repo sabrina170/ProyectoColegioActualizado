@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>
+        Preguntas de matematica
+    </title>
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="vendor/css/materialize.min.css">
+    <link rel="stylesheet" href="vendor/css/animate.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+        crossorigin="anonymous">
+    <script src="vendor/js/vue.js"></script>
+</head>
+
+<body>
+    <div id="app" class="container" >
+        <div class="row ">
+            <div v-show="pagina == 1" class="animated fadeInUp ">
+                <center>
+                    <h1 class="orange-text text-lighten-2 ">
+                        <img src="vendor/img/logo.png">
+                    </h1>
+                    <br><br> <br>
+                    <div>
+                        <button @click="pagina = 5" class="btn-floating btn-large pulse orange"><i class="fas fa-play"></i></button>
+                        <br> Jugar
+                    </div>
+
+                </center>
+            </div>
+            <div class="row animated bounceIn" v-show="pagina == 2">
+                <div class="col s10">
+                   
+                    <center>
+
+                        <h3>{{tiempo}}</h3>
+                        <div v-show="preguntaActual.tipo == 1">
+                            <h5 class="orange-text">¿Cierto o Falso?</h5>
+                            <h5>{{preguntaActual.cuerpo}}</h5>
+                            <br><br>
+                            <a class="btn-floating btn-large pulse green" @click="contestar(true)"> <i class="fa fa-check"></i>
+                            </a>
+                            <a class="btn-floating btn-large pulse red" @click="contestar(false)"> <i class="fa fa-times"></i>
+                            </a>
+                        </div>
+                        <div v-show="preguntaActual.tipo == 2">
+                            <h5 class="orange-text">Elige la opción correcta</h5>
+                            <h5 v-html="preguntaActual.cuerpo"></h5>
+                            <br>
+                            <button class="btn green darken-5" v-for="(opcion,index) in preguntaActual.opciones" style="margin-right: 2%"
+                                @click="contestar(index)" style="font-size:5rem">{{opcion}}</button>
+                        </div>
+
+                        <div v-if="preguntaActual.tipo == 3">
+                            <h5 class="orange-text">Completa la oración</h5>
+                            <p v-if="historialP3.length">
+                                <div v-for="parte in historialP3">
+                                    <h4>{{parte.cuerpo}} <b> {{parte.respuesta}} </b> </h4>
+                                </div>
+                            </p>
+                            <p>
+                                <h2>{{preguntaActual.partes[indexP3].cuerpo}}</h2>
+                                <button class="btn orange darken-5" v-for="(opcion,index) in preguntaActual.partes[indexP3].opciones"
+                                    style="margin-right: 2%" @click="contestar(index)">{{opcion}}</button>
+                            </p>
+                            <br>
+                            <button class="btn orange darken-4" v-for="(opcion,index) in preguntaActual.opciones" style="margin-right: 2%"
+                                @click="contestar(index)">{{opcion}}</button>
+                        </div>
+                        <br>
+                        <!-- <div class="center-align">Puntuación: {{puntuacion}}</div> -->
+                        {{mensaje}}
+                        {{revisarPuntuacion}}
+                    </center>
+                </div>
+                <div class="col s2" >
+                    <div v-show="historialRespuestas.length">
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <div class="row">
+
+                            <div v-for="(h,index) in historialRespuestas" class="col s4 center-align">
+                                {{index+1}} <span v-if="h"> ({{puntosXDificultad}})</span> <span v-else>(0)</span>
+                                <a class="btn-floating btn-large green" v-if="h">
+                                    <i class="fa fa-check"> </i>
+                                </a>
+                                <a class="btn-floating btn-large red" v-else>
+                                    <i class="fa fa-times"> </i>
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row" v-show="pagina == 3">
+
+                <div class="col s10">
+                    <center>
+                        <h3 class="animated bounceIn teal-text ">¡Fin del juego!</h3>
+                        <h1 class="animated flipInX teal-text orange-text">Puntuación {{puntuacion}}</h1>
+                        <div v-if="!nuevaPuntuacionMax">
+                            <img src="vendor/img/sad.png" alt="" width="20%">
+                            <br>
+                            <h3>No has superado tu record</h3>
+                        </div>
+                        <div v-else>
+                            <img src="vendor/img/chido.png" alt="" width="20%">
+                            <br>
+                            <h3 class="animated tada infinite">¡Nuevo record!</h3>
+                        </div>
+
+                        <br>
+                        <button class="orange btn-floating btn-large animated infinite tada" @click="otraVez"><i class="fas fa-redo-alt"></i></button>
+                        <br> Volver a jugar
+
+                    </center>
+                </div>
+
+                <div class="col s2">
+                    <div v-show="historialRespuestas.length">
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <br>
+                        <div class="row">
+
+                            <div v-for="(h,index) in historialRespuestas" class="col s4 center-align">
+                                #{{index+1}} <span v-if="h"> ({{puntosXDificultad}})</span> <span v-else>(0)</span>
+
+                                <a class="btn-floating btn-large green" v-if="h">
+                                    <i class="fa fa-check"> </i>
+                                </a>
+                                <a class="btn-floating btn-large red" v-else>
+                                    <i class="fa fa-times"> </i>
+                                </a>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div v-show="pagina == 5">
+                <br><br><br><br>
+                <center>
+                    <h3 class="orange-text">Elige la dificultad</h3>
+                    <div class="row">
+                        <br><br>
+                        <div class="col s4 animated rubberBand" @click="facil">
+                            <img src="vendor/img/easy.png" alt="" width="40%"> <br>Fácil
+                        </div>
+                        <div class="col s4 animated rubberBand" @click="normal">
+                            <img src="vendor/img/normal.png" width="40%" alt=""> <br>Normal
+                        </div>
+                        <div class="col s4 animated rubberBand" @click="dificil">
+                            <img src="vendor/img/hard.png" width="40%" alt=""> <br>Difícil
+                        </div>
+                    </div>
+                </center>
+            </div>
+            <div class="row">
+                <div class="col m6 left-align">
+                    <br><br>
+                </div>
+                <div class="col m6 right-align">
+                    <br>
+                    <br>
+                    <h6>
+                        <!-- <small >Máxima Puntuación: {{puntuacionMaxima}}</small> -->
+                    </h6>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="vendor/js/materialize.min.js"></script>
+    <script src="vendor/js/main.js">
+    </script>
+</body>
+
+</html>
